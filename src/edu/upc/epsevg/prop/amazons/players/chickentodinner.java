@@ -7,7 +7,7 @@ package edu.upc.epsevg.prop.amazons.players;
 
 /**
  *
- * @author nilbm
+ * @author nilbm y David
  */
 public class chickentodinner {
     
