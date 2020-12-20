@@ -45,4 +45,8 @@ public class chickentodinner implements IPlayer, IAuto {
     public Move move(GameStatus s) {
         return null;
     }
+    
+    public int Prueba() {
+        return 1;
+    }
 }
