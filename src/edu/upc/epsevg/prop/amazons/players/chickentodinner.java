@@ -61,7 +61,9 @@ public class chickentodinner implements IPlayer, IAuto {
     
     private java.awt.Point shootArrow(GameStatus s){
         java.awt.Point apuntada = null;
-        
+        //bucle mira posiciones de las reinas del jugador contrari
+        //bucle mira alrededor de cada reina y cuenta las flechas
+        //nos quedamos con la reina que mas flechas tenga, sin llegar a 8 y le ponemos una flecha en la 8ava posicion o menor.
         return apuntada;
     }
     
