@@ -80,6 +80,19 @@ public class chickentodinner implements IPlayer, IAuto {
     }
     
     private int heuristica(GameStatus s){
+        int numeroamazones=s.getNumberOfAmazonsForEachColor();
+        java.awt.Point apuntada = null;
+        java.awt.Point amazonActual = null;
+        double posx,posy;
+        CellType jugadoractual=s.getCurrentPlayer();
+        for (int i = 0; i<numeroamazones; i++){
+            amazonActual=s.getAmazon(jugadoractual,i);
+        
+     
+        }
+       return getHeuristica(s,CellType.PLAYER1)-getHeuristica(s,CellType.PLAYER2);//REVISAR!!!!!!!!PLAYER!!!!!    
+    }
+    private int getHeuristica(GameStatus s,CellType p){
         return 0;
     }
     
@@ -103,7 +116,7 @@ public class chickentodinner implements IPlayer, IAuto {
             amazonIndex=i;
             for (double x = posx-1; x<posx+1; x++){
                  for (double y = posy-1; y<posy+1; y++){ 
-                    if((x>=0 || x<tauler) && (y>=0 || y<tauler) ){//Revisar si x o y pot ser iguala tauler
+                    if(isInBounds((int)x,(int)y)){//Revisar si x o y pot ser iguala tauler
                         if(s.getPos((int)x,(int)y)==CellType.EMPTY){
                            ++buida;
                        }
