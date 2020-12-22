@@ -30,8 +30,14 @@ public class chickentodinner implements IPlayer, IAuto {
     
     public chickentodinner(String name) {
         this.name = name;
+        this.maxDepth = 2;
     }
-
+    
+    public chickentodinner(String name, int depth) {
+        this.name = name;
+        this.maxDepth = depth;
+    }
+    
     @Override
     public void timeout() {
         // Nothing to do! I'm so fast, I never timeout 8-)
