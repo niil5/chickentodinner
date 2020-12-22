@@ -61,12 +61,52 @@ public class chickentodinner implements IPlayer, IAuto {
     
     private java.awt.Point shootArrow(GameStatus s){
         java.awt.Point apuntada = null;
-        //bucle mira posiciones de las reinas del jugador contrari
-        //bucle mira alrededor de cada reina y cuenta las flechas
-        //nos quedamos con la reina que mas flechas tenga, sin llegar a 8 y le ponemos una flecha en la 8ava posicion o menor.
+        java.awt.Point amazonActual = null;
+        int numeroamazones=s.getNumberOfAmazonsForEachColor();
+        int tauler=s.getSize();
+        int amazonIndex;
+        double posx,posy;
+        int buida=0;
+        int bestAmazon=0;
+        int minBuida=maxint;
+        CellType jugadoractual=s.getCurrentPlayer();
+        for (int i = 0; i<numeroamazones; i++){
+            amazonActual=s.getAmazon(jugadoractual,i);
+            posx=amazonActual.getX();
+            posy=amazonActual.getY();
+            amazonIndex=i;
+            for (double x = posx-1; x<posx+1; x++){
+                 for (double y = posy-1; y<posy+1; y++){ 
+                    if((x>=0 || x<tauler) && (y>=0 || y<tauler) ){//Revisar si x o y pot ser iguala tauler
+                        if(s.getPos((int)x,(int)y)==CellType.EMPTY){
+                           ++buida;
+                       }
+                    }
+                }
+            } 
+            //comparacion em quedo amb la més petita
+            if(buida<minBuida){
+                minBuida=buida;
+                bestAmazon=amazonIndex;
+            }
+            buida=0;// Revisar
+        }
+        amazonActual=s.getAmazon(jugadoractual,bestAmazon);
+        posx=amazonActual.getX();
+        posy=amazonActual.getY();
+        boolean trobada=true;
+        for (double x = posx-1; x<posx+1; x++){
+            for (double y = posy-1; y<posy+1; y++){ 
+                if((x>=0 || x<tauler) && (y>=0 || y<tauler) ){//Revisar si x o y pot ser iguala tauler
+                    if(s.getPos((int)x,(int)y)==CellType.EMPTY || trobada){
+                        trobada=false;
+                        apuntada=new Point((int)x,(int)y);
+                    }
+                }
+            }
+        }
         return apuntada;
     }
-    
     
     
     
