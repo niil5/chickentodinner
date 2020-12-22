@@ -86,7 +86,10 @@ public class chickentodinner implements IPlayer, IAuto {
     }
     
     private int heuristica(GameStatus s){
-        return getHeuristica(s,CellType.PLAYER1)-getHeuristica(s,CellType.PLAYER2);//REVISAR!!!!!!!!PLAYER!!!!!  
+        CellType enemy;
+        if(player == CellType.PLAYER1) enemy = CellType.PLAYER2;
+        else enemy = CellType.PLAYER1;
+        return getHeuristica(s,player)-getHeuristica(s,enemy);
     }
     
     private int getHeuristica(GameStatus s,CellType p){
