@@ -110,11 +110,20 @@ public class chickentodinner implements IPlayer, IAuto {
         int valor=0;
         int valortotal=0;
         CellType jugadoractual=p;
-        for (int i = 0; i<numeroamazones; i++){
-            amazonActual=s.getAmazon(jugadoractual,i);
-            llistapos=s.getAmazonMoves(amazonActual,false);
-            valor=llistapos.size();
-            valortotal+=valor;      
+        if(s.isGameOver()){
+            
+            if(s.GetWinner()==jugadoractual){
+                valortotal=maxint;
+            }else{
+                valortotal=minint;
+            }
+        }else{
+            for (int i = 0; i<numeroamazones; i++){
+                amazonActual=s.getAmazon(jugadoractual,i);
+                llistapos=s.getAmazonMoves(amazonActual,false);
+                valor=llistapos.size();
+                valortotal+=valor;      
+            } 
         }
         
         return valortotal;
