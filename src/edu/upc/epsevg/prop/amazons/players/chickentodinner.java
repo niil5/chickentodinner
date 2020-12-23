@@ -54,7 +54,7 @@ public class chickentodinner implements IPlayer, IAuto {
                 && (y >= 0 && y < s.getSize());
     }
     
-    public Move move(GameStatus s) {
+public Move move(GameStatus s) {
         player = s.getCurrentPlayer();
         if(player == CellType.PLAYER1) enemy = CellType.PLAYER2;
         else enemy = CellType.PLAYER1;
@@ -67,28 +67,25 @@ public class chickentodinner implements IPlayer, IAuto {
         Point bestMove = null;
         
         for (int i = 0; i<s.getNumberOfAmazonsForEachColor(); i++){
-           java.awt.Point pActual = s.getAmazon(s.getCurrentPlayer(), i);
-           java.util.ArrayList<java.awt.Point> actualAmazon = s.getAmazonMoves(pActual, false);
-           if(actualAmazon.size() > 0){
-                for (int j = 0; j<actualAmazon.size(); j++){
-                    GameStatus aux = new GameStatus(s);
-                    aux.moveAmazon(pActual, actualAmazon.get(j));
-                    aux.placeArrow(shootArrow(aux));
-                    int ab = AlphaBeta(aux, alpha, beta, maxDepth);      
-                    if (ab>best){                  
-                        bestMove=actualAmazon.get(j);  
-                        bestAmazon = i;
-                        best = ab;                 
-                    }                       
-                    alpha = Math.max(alpha, best);
-                }         
-           } else {
-               s.placeArrow(shootArrow(s));
-           }
+            java.awt.Point pActual = s.getAmazon(s.getCurrentPlayer(), i);
+            java.util.ArrayList<java.awt.Point> actualAmazon = s.getAmazonMoves(pActual, false);
+            for (int j = 0; j<actualAmazon.size(); j++){
+                GameStatus aux = new GameStatus(s);
+                aux.moveAmazon(pActual, actualAmazon.get(j));
+                aux.placeArrow(shootArrow(aux));
+                int ab = AlphaBeta(aux, alpha, beta, maxDepth);      
+                if (ab>best){                  
+                    bestMove=actualAmazon.get(j);  
+                    bestAmazon = i;
+                    best = ab;                 
+                }                       
+                alpha = Math.max(alpha, best);
+            }         
+
        
         }
         if(bestMove == null){
-            System.out.println("B");
+          return new Move(s.getAmazon(s.getCurrentPlayer(), bestAmazon), s.getAmazon(s.getCurrentPlayer(), bestAmazon), shootArrow(s), (int)numNodosExp, maxDepth, SearchType.RANDOM);  
         }
         System.out.println("saca movimiento");
         System.out.println(s.getAmazon(s.getCurrentPlayer(), bestAmazon));
