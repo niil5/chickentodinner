@@ -4,6 +4,7 @@ import edu.upc.epsevg.prop.amazons.players.HumanPlayer;
 import edu.upc.epsevg.prop.amazons.players.CarlinhosPlayer;
 import edu.upc.epsevg.prop.amazons.players.RandomPlayer;
 import edu.upc.epsevg.prop.amazons.players.chickentodinner;
+import edu.upc.epsevg.prop.amazons.players.chickentodinner_ItDepth;
 import javax.swing.SwingUtilities;
 
 /**
@@ -21,9 +22,9 @@ public class Amazons {
             @Override
             public void run() {
                 
-                //IPlayer player1 = new HumanPlayer("Snail");
-                IPlayer player1 = new CarlinhosPlayer();
-                IPlayer player2 = new chickentodinner("Davis", 2);
+                IPlayer player1 = new HumanPlayer("Snail");
+                //IPlayer player1 = new CarlinhosPlayer();
+                IPlayer player2 = new chickentodinner_ItDepth("Davis");
                 
                 new AmazonsBoard(player1 , player2, 10, Level.HALF_BOARD);
                 
