@@ -22,7 +22,7 @@ import java.util.Random;
 public class chickentodinner implements IPlayer, IAuto {
     private String name;
     private GameStatus s;
-    private int maxDepth = 1;
+    private int maxDepth = 2;
     private long numNodosExp = 0;
     private int maxint = Integer.MAX_VALUE; //valor maximo que puede asignarse a un entero
     private int minint = Integer.MIN_VALUE; //valor minimo que puede asignarse a un entero
@@ -49,7 +49,6 @@ public class chickentodinner implements IPlayer, IAuto {
     }
     
     private boolean isInBounds(int x, int y) {
-        System.out.println("inbound");
         return (x >= 0 && x < s.getSize())
                 && (y >= 0 && y < s.getSize());
     }
@@ -118,7 +117,6 @@ public class chickentodinner implements IPlayer, IAuto {
     
     
  private java.awt.Point shootArrow(GameStatus s){
-      System.out.println("E");
         java.awt.Point apuntada = null;
         java.awt.Point amazonActual = null;
         int numeroamazones=s.getNumberOfAmazonsForEachColor();
@@ -130,18 +128,14 @@ public class chickentodinner implements IPlayer, IAuto {
         int minBuida=maxint;
         CellType jugadoractual=s.getCurrentPlayer();
         for (int i = 0; i<numeroamazones; i++){
-            System.out.println("E1");
             amazonActual=s.getAmazon(jugadoractual,i);
             posx=amazonActual.getX();
             posy=amazonActual.getY();
             amazonIndex=i;
             for (double x = posx-1; x<=posx+1; x++){
-                System.out.println("E2");
                  for (double y = posy-1; y<=posy+1; y++){ 
-                     System.out.println("E3");
                     if(isInBounds((int)x,(int)y)){//Revisar si x o y pot ser iguala tauler
                         if(s.getPos((int)x,(int)y)==CellType.EMPTY){
-                            System.out.println("E3-1");
                            ++buida;
                        }
                     }
@@ -159,9 +153,7 @@ public class chickentodinner implements IPlayer, IAuto {
         posy=amazonActual.getY();
         boolean trobada=false;
         for (double x = posx-1; x<=posx+1 && !trobada; x++){
-            System.out.println("E4");
             for (double y = posy-1; y<=posy+1 && !trobada; y++){
-                System.out.println("E5");
                 if(isInBounds((int)x,(int)y)){//Revisar si x o y pot ser iguala tauler
                     if(s.getPos((int)x,(int)y)==CellType.EMPTY){
                         trobada=true;
@@ -170,8 +162,8 @@ public class chickentodinner implements IPlayer, IAuto {
                 }
             }
         }
-        if(apuntada == null){
-           System.out.println("apuntada null");
+        if(apuntada == null || !isInBounds((int)apuntada.getX(), (int)apuntada.getY()) || s.getPos((int)apuntada.getX(), (int)apuntada.getY())==CellType.EMPTY){
+           System.out.println("apuntada fallo");
         } 
         return apuntada;
     }
