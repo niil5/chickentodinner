@@ -22,7 +22,7 @@ import java.util.Random;
 public class chickentodinner implements IPlayer, IAuto {
     private String name;
     private GameStatus s;
-    private int maxDepth = 2;
+    private int maxDepth = 4;
     private long numNodosExp = 0;
     private int maxint = Integer.MAX_VALUE; //valor maximo que puede asignarse a un entero
     private int minint = Integer.MIN_VALUE; //valor minimo que puede asignarse a un entero
@@ -31,7 +31,7 @@ public class chickentodinner implements IPlayer, IAuto {
     
     public chickentodinner(String name) {
         this.name = name;
-        this.maxDepth = 2;
+        this.maxDepth = 4;
     }
     
     public chickentodinner(String name, int depth) {
@@ -55,7 +55,6 @@ public class chickentodinner implements IPlayer, IAuto {
     }
     
     public Move move(GameStatus s) {
-        System.out.println("A");
         player = s.getCurrentPlayer();
         if(player == CellType.PLAYER1) enemy = CellType.PLAYER2;
         else enemy = CellType.PLAYER1;
@@ -73,9 +72,7 @@ public class chickentodinner implements IPlayer, IAuto {
            for (int j = 0; j<actualAmazon.size(); j++){
                 GameStatus aux = new GameStatus(s);
                 aux.moveAmazon(pActual, actualAmazon.get(j));
-                System.out.println("pone amazon");
                 aux.placeArrow(shootArrow(aux));
-                System.out.println("pone flecha");
                 int ab = AlphaBeta(aux, alpha, beta, maxDepth);      
                 if (ab>best){                  
                     bestMove=actualAmazon.get(j);  
@@ -93,16 +90,16 @@ public class chickentodinner implements IPlayer, IAuto {
         System.out.println("saca movimiento");
         System.out.println(s.getAmazon(s.getCurrentPlayer(), bestAmazon));
         System.out.println(bestMove);
-        return new Move(s.getAmazon(s.getCurrentPlayer(), bestAmazon), bestMove, shootArrow(s), (int)numNodosExp, maxDepth, SearchType.RANDOM);
+        GameStatus aux = new GameStatus(s);
+        aux.moveAmazon(s.getAmazon(s.getCurrentPlayer(), bestAmazon), bestMove);
+        return new Move(s.getAmazon(s.getCurrentPlayer(), bestAmazon), bestMove, shootArrow(aux), (int)numNodosExp, maxDepth, SearchType.RANDOM);
     }
     
     private int heuristica(GameStatus s){
-        System.out.println("C");
         return getHeuristica(s,player)-getHeuristica(s,enemy);
     }
     
     private int getHeuristica(GameStatus s,CellType p){
-         System.out.println("D");
         int numeroamazones=s.getNumberOfAmazonsForEachColor();
         java.awt.Point apuntada = null;
         java.awt.Point amazonActual = null;
@@ -174,7 +171,19 @@ public class chickentodinner implements IPlayer, IAuto {
             }
         }
         if(apuntada == null || !isInBounds((int)apuntada.getX(), (int)apuntada.getY()) || s.getPos((int)apuntada.getX(), (int)apuntada.getY())==CellType.EMPTY){
-           System.out.println("apuntada fallo");
+           int n = s.getEmptyCellsCount();
+            Random rand = new Random();
+            int p = rand.nextInt(n) + 1;//de 1 a n
+            for (int i = 0; i < s.getSize(); i++) {
+                for (int j = 0; j < s.getSize(); j++) {
+                    if (s.getPos(i, j) == CellType.EMPTY) {
+                        p--;
+                        if (p == 0) {
+                            return new Point(i, j);
+                        }
+                    }
+                }
+            }
         } 
         return apuntada;
     }
@@ -184,7 +193,6 @@ public class chickentodinner implements IPlayer, IAuto {
     
     
     private int AlphaBeta(GameStatus s, int alpha, int beta, int depth){
-         System.out.println("F");
     numNodosExp++;          
     int best;               
     if (depth <= 0 || s.isGameOver() || s.getEmptyCellsCount() == 0){ //añadir mejor condicion de salida 
