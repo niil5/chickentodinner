@@ -13,7 +13,7 @@ import edu.upc.epsevg.prop.amazons.Move;
 import edu.upc.epsevg.prop.amazons.SearchType;
 import java.awt.Point;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.Hashtable;
 import java.util.Random;
 
 /**
@@ -21,6 +21,7 @@ import java.util.Random;
  * @author nilbm y David
  */
 public class chickentodinner_ItDepth implements IPlayer, IAuto {
+    private boolean firtsTime = true;
     private String name;
     private GameStatus s;
     private int depth = 0;
@@ -29,8 +30,8 @@ public class chickentodinner_ItDepth implements IPlayer, IAuto {
     private int minint = Integer.MIN_VALUE; //valor minimo que puede asignarse a un entero
     private CellType player;
     private CellType enemy;
-    private long Zobrist;
-    private java.util.HashMap<java.lang.Long, Integer> hmap = new HashMap<java.lang.Long, Integer>();
+    private long key;
+    private java.util.Hashtable<java.lang.Long, Integer> htable = new Hashtable<java.lang.Long, Integer>();
     long[][][] table= new long[10][10][3];
     private boolean timeOut = false;
     
@@ -83,7 +84,12 @@ public class chickentodinner_ItDepth implements IPlayer, IAuto {
     
     public Move move(GameStatus s) {
         this.s = s;
-        initZobrist();
+        if(firtsTime){
+            initZobrist();
+            firtsTime=false;
+            key = getHashKey(s);
+        }
+    
         timeOut = false;
         player = s.getCurrentPlayer();
         if(player == CellType.PLAYER1) enemy = CellType.PLAYER2;
@@ -102,10 +108,30 @@ public class chickentodinner_ItDepth implements IPlayer, IAuto {
                 java.awt.Point pActual = s.getAmazon(s.getCurrentPlayer(), i);
                 java.util.ArrayList<java.awt.Point> actualAmazon = s.getAmazonMoves(pActual, false);
                 for (int j = 0; j<actualAmazon.size(); j++){
+                    
                     GameStatus aux = new GameStatus(s);
                     aux.moveAmazon(pActual, actualAmazon.get(j));
-                    aux.placeArrow(shootArrow(aux));
-                    int ab = AlphaBeta(aux, alpha, beta, depth);      
+                    java.awt.Point apuntada = shootArrow(aux);
+                    aux.placeArrow(apuntada);
+
+                    int color;
+                    if(s.getCurrentPlayer() == CellType.PLAYER1) color = 0;
+                    else color = 1;
+                    long oldPoss = table[(int)pActual.getX()][(int)pActual.getY()][color];
+                    long newPoss = table[(int)actualAmazon.get(j).getX()][(int)actualAmazon.get(j).getY()][color];
+                    long newArrow = table[(int)apuntada.getX()][(int)apuntada.getY()][2];
+                    
+                    key ^=oldPoss;
+                    key ^=newPoss;
+                    key ^=newArrow;
+                    
+                    int ab = AlphaBeta(aux, alpha, beta, depth);  
+                    
+                    key ^=oldPoss;
+                    key ^=newPoss;
+                    key ^=newArrow;
+                    
+                    
                     if (ab>best){                  
                         bestMove=actualAmazon.get(j);  
                         bestAmazon = i;
@@ -125,7 +151,14 @@ public class chickentodinner_ItDepth implements IPlayer, IAuto {
     }
     
     private int heuristica(GameStatus s){
-        return getHeuristica(s,player)-getHeuristica(s,enemy);
+        int hValue;
+        if(htable.get(key) == null){
+            hValue = getHeuristica(s,player)-getHeuristica(s,enemy);
+            htable.put(key, hValue);
+        } else {
+            hValue = htable.get(key);
+        }
+        return hValue;
     }
     
     private int getHeuristica(GameStatus s,CellType p){
@@ -257,11 +290,30 @@ public class chickentodinner_ItDepth implements IPlayer, IAuto {
     if (player == s.getCurrentPlayer()){  
         best = minint;  
         for (int i = 0; i<priorityAmazon.size(); i++){  
+            
             GameStatus aux = new GameStatus(s);
             aux.moveAmazon(s.getAmazon(s.getCurrentPlayer(), amazonIndex), priorityAmazon.get(i));
-            aux.placeArrow(shootArrow(aux));
+            java.awt.Point apuntada = shootArrow(aux);
+            aux.placeArrow(apuntada);
+
+            int color;
+            if(s.getCurrentPlayer() == CellType.PLAYER1) color = 0;
+            else color = 1;
+            long oldPoss = table[(int)s.getAmazon(s.getCurrentPlayer(), amazonIndex).getX()][(int)s.getAmazon(s.getCurrentPlayer(), amazonIndex).getY()][color];
+            long newPoss = table[(int)priorityAmazon.get(i).getX()][(int)priorityAmazon.get(i).getY()][color];
+            long newArrow = table[(int)apuntada.getX()][(int)apuntada.getY()][2];
+                    
+            key ^=oldPoss;
+            key ^=newPoss;
+            key ^=newArrow;
+                    
             best = Math.max(best, AlphaBeta(aux, alpha, beta, depth-1));  
-            alpha = Math.max(alpha, best);  
+            alpha = Math.max(alpha, best); 
+                    
+            key ^=oldPoss;
+            key ^=newPoss;
+            key ^=newArrow;
+ 
             if (alpha >= beta) break;       
         }
         return best;                            
@@ -271,9 +323,27 @@ public class chickentodinner_ItDepth implements IPlayer, IAuto {
         for (int i = 0; i<priorityAmazon.size(); i++){    
             GameStatus aux = new GameStatus(s);
             aux.moveAmazon(s.getAmazon(s.getCurrentPlayer(), amazonIndex), priorityAmazon.get(i));
-            aux.placeArrow(shootArrow(aux));
+            java.awt.Point apuntada = shootArrow(aux);
+            aux.placeArrow(apuntada);
+
+            int color;
+            if(s.getCurrentPlayer() == CellType.PLAYER1) color = 0;
+            else color = 1;
+            long oldPoss = table[(int)s.getAmazon(s.getCurrentPlayer(), amazonIndex).getX()][(int)s.getAmazon(s.getCurrentPlayer(), amazonIndex).getY()][color];
+            long newPoss = table[(int)priorityAmazon.get(i).getX()][(int)priorityAmazon.get(i).getY()][color];
+            long newArrow = table[(int)apuntada.getX()][(int)apuntada.getY()][2];
+                    
+            key ^=oldPoss;
+            key ^=newPoss;
+            key ^=newArrow;
+                    
             best = Math.min(best, AlphaBeta(aux, alpha, beta, depth-1));  
-            beta = Math.min(beta, best);    
+            beta = Math.min(beta, best); 
+            
+            key ^=oldPoss;
+            key ^=newPoss;
+            key ^=newArrow;
+     
             if (beta <= alpha) break;     
         }
         return best;                            
