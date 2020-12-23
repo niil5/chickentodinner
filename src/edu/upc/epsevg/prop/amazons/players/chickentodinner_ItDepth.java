@@ -24,7 +24,6 @@ public class chickentodinner_ItDepth implements IPlayer, IAuto {
     private boolean firtsTime = true;
     private String name;
     private GameStatus s;
-    private int depth = 0;
     private long numNodosExp = 0;
     private int maxint = Integer.MAX_VALUE; //valor maximo que puede asignarse a un entero
     private int minint = Integer.MIN_VALUE; //valor minimo que puede asignarse a un entero
@@ -34,6 +33,7 @@ public class chickentodinner_ItDepth implements IPlayer, IAuto {
     private java.util.Hashtable<java.lang.Long, Integer> htable = new Hashtable<java.lang.Long, Integer>();
     long[][][] table= new long[10][10][3];
     private boolean timeOut = false;
+    private int depth=0;
     
     public chickentodinner_ItDepth(String name) {
         this.name = name;
@@ -143,11 +143,11 @@ public class chickentodinner_ItDepth implements IPlayer, IAuto {
     
         }
         if(bestMove == null){
-            return new Move(s.getAmazon(s.getCurrentPlayer(), bestAmazon), s.getAmazon(s.getCurrentPlayer(), bestAmazon), shootArrow(s), (int)numNodosExp, depth, SearchType.RANDOM);  
+            return new Move(s.getAmazon(s.getCurrentPlayer(), bestAmazon), s.getAmazon(s.getCurrentPlayer(), bestAmazon), shootArrow(s), (int)numNodosExp, this.depth, SearchType.RANDOM);  
         }
         GameStatus aux = new GameStatus(s);
         aux.moveAmazon(s.getAmazon(s.getCurrentPlayer(), bestAmazon), bestMove);
-        return new Move(s.getAmazon(s.getCurrentPlayer(), bestAmazon), bestMove, shootArrow(aux), (int)numNodosExp, depth, SearchType.RANDOM);
+        return new Move(s.getAmazon(s.getCurrentPlayer(), bestAmazon), bestMove, shootArrow(aux), (int)numNodosExp, this.depth, SearchType.RANDOM);
     }
     
     private int heuristica(GameStatus s){
