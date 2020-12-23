@@ -69,20 +69,23 @@ public class chickentodinner implements IPlayer, IAuto {
         for (int i = 0; i<s.getNumberOfAmazonsForEachColor(); i++){
            java.awt.Point pActual = s.getAmazon(s.getCurrentPlayer(), i);
            java.util.ArrayList<java.awt.Point> actualAmazon = s.getAmazonMoves(pActual, false);
-           for (int j = 0; j<actualAmazon.size(); j++){
-                GameStatus aux = new GameStatus(s);
-                aux.moveAmazon(pActual, actualAmazon.get(j));
-                aux.placeArrow(shootArrow(aux));
-                int ab = AlphaBeta(aux, alpha, beta, maxDepth);      
-                if (ab>best){                  
-                    bestMove=actualAmazon.get(j);  
-                    bestAmazon = i;
-                    best = ab;                 
-                }                       
-            alpha = Math.max(alpha, best);
-               
+           if(actualAmazon.size() > 0){
+                for (int j = 0; j<actualAmazon.size(); j++){
+                    GameStatus aux = new GameStatus(s);
+                    aux.moveAmazon(pActual, actualAmazon.get(j));
+                    aux.placeArrow(shootArrow(aux));
+                    int ab = AlphaBeta(aux, alpha, beta, maxDepth);      
+                    if (ab>best){                  
+                        bestMove=actualAmazon.get(j);  
+                        bestAmazon = i;
+                        best = ab;                 
+                    }                       
+                    alpha = Math.max(alpha, best);
+                }         
+           } else {
+               s.placeArrow(shootArrow(s));
            }
-           
+       
         }
         if(bestMove == null){
             System.out.println("B");
