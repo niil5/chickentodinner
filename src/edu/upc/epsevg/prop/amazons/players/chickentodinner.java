@@ -123,7 +123,25 @@ public Move move(GameStatus s) {
             } 
         }
         
-        return valortotal;
+        int buida = 0;
+        int bloqueadas = 0;
+        for (int i = 0; i<s.getNumberOfAmazonsForEachColor(); i++){
+            amazonActual=s.getAmazon(p,i);
+            double posx=amazonActual.getX();
+            double posy=amazonActual.getY();  
+            for (double x = posx-1; x<=posx+1; x++){
+                 for (double y = posy-1; y<=posy+1; y++){ 
+                    if(isInBounds((int)x,(int)y)){
+                        if(s.getPos((int)x,(int)y)==CellType.EMPTY){
+                           ++buida;
+                       }
+                    }
+                }
+            } 
+            if(buida==0) bloqueadas+=1;
+           
+        }
+        return valortotal * (buida/s.getNumberOfAmazonsForEachColor()) - (50*bloqueadas);
     }
     
     

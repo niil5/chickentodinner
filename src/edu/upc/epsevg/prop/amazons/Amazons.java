@@ -24,7 +24,7 @@ public class Amazons {
                 
                 //IPlayer player1 = new HumanPlayer("Snail");
                 IPlayer player1 = new CarlinhosPlayer();
-                IPlayer player2 = new chickentodinner_ItDepth("Davis");
+                IPlayer player2 = new chickentodinner("Davis", 4);
                 
                 new AmazonsBoard(player1 , player2, 10, Level.HALF_BOARD);
                 
