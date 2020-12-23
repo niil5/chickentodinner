@@ -21,8 +21,8 @@ public class Amazons {
             @Override
             public void run() {
                 
-                IPlayer player1 = new HumanPlayer("Snail");
-                //IPlayer player2 = new CarlinhosPlayer();
+                //IPlayer player1 = new HumanPlayer("Snail");
+                IPlayer player1 = new CarlinhosPlayer();
                 IPlayer player2 = new chickentodinner("Davis");
                 
                 new AmazonsBoard(player1 , player2, 10, Level.HALF_BOARD);
