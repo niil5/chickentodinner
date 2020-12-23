@@ -95,7 +95,7 @@ public class chickentodinner_ItDepth implements IPlayer, IAuto {
         if(player == CellType.PLAYER1) enemy = CellType.PLAYER2;
         else enemy = CellType.PLAYER1;
         numNodosExp = 0;
-        depth = 0;
+        this.depth = 0;
         int alpha = minint;     
         int beta = maxint; 
         int best = minint;
@@ -103,7 +103,7 @@ public class chickentodinner_ItDepth implements IPlayer, IAuto {
         Point bestMove = null;
         
         while(!timeOut){
-            depth+=1;
+            this.depth+=1;
             for (int i = 0; i<s.getNumberOfAmazonsForEachColor(); i++){
                 java.awt.Point pActual = s.getAmazon(s.getCurrentPlayer(), i);
                 java.util.ArrayList<java.awt.Point> actualAmazon = s.getAmazonMoves(pActual, false);
@@ -125,7 +125,7 @@ public class chickentodinner_ItDepth implements IPlayer, IAuto {
                     key ^=newPoss;
                     key ^=newArrow;
                     
-                    int ab = AlphaBeta(aux, alpha, beta, depth);  
+                    int ab = AlphaBeta(aux, alpha, beta, this.depth);  
                     
                     key ^=oldPoss;
                     key ^=newPoss;
@@ -171,9 +171,9 @@ public class chickentodinner_ItDepth implements IPlayer, IAuto {
         if(s.isGameOver()){
             
             if(s.GetWinner()==jugadoractual){
-                valortotal=maxint;
+                return maxint;
             }else{
-                valortotal=minint;
+                return minint;
             }
         }else{
             for (int i = 0; i<numeroamazones; i++){
@@ -183,8 +183,26 @@ public class chickentodinner_ItDepth implements IPlayer, IAuto {
                 valortotal+=valor;      
             } 
         }
-        
-        return valortotal;
+
+        int buida = 0;
+        int bloqueadas = 0;
+        for (int i = 0; i<s.getNumberOfAmazonsForEachColor(); i++){
+            amazonActual=s.getAmazon(p,i);
+            double posx=amazonActual.getX();
+            double posy=amazonActual.getY();  
+            for (double x = posx-1; x<=posx+1; x++){
+                 for (double y = posy-1; y<=posy+1; y++){ 
+                    if(isInBounds((int)x,(int)y)){
+                        if(s.getPos((int)x,(int)y)==CellType.EMPTY){
+                           ++buida;
+                       }
+                    }
+                }
+            } 
+            if(buida==0) bloqueadas+=1;
+           
+        }
+        return valortotal * (buida/s.getNumberOfAmazonsForEachColor()) - (50*bloqueadas);
     }
     
     
@@ -259,17 +277,13 @@ public class chickentodinner_ItDepth implements IPlayer, IAuto {
     
     
     
-    private int AlphaBeta(GameStatus s, int alpha, int beta, int depth){
+    private int AlphaBeta(GameStatus s, int alpha, int beta, int depthActual){
     if(timeOut){
         return minint;
     }
     numNodosExp++;          
     int best;               
-    if (depth <= 0 || s.isGameOver() || s.getEmptyCellsCount() == 0){ //añadir mejor condicion de salida 
-        if(s.isGameOver()){
-            if(player == s.GetWinner()) return maxint;
-            else return minint;
-        }
+    if (depthActual <= 0 || s.isGameOver() || s.getEmptyCellsCount() == 0){ //añadir mejor condicion de salida 
         return heuristica(s);                               
     }
     
@@ -307,7 +321,7 @@ public class chickentodinner_ItDepth implements IPlayer, IAuto {
             key ^=newPoss;
             key ^=newArrow;
                     
-            best = Math.max(best, AlphaBeta(aux, alpha, beta, depth-1));  
+            best = Math.max(best, AlphaBeta(aux, alpha, beta, depthActual-1));  
             alpha = Math.max(alpha, best); 
                     
             key ^=oldPoss;
@@ -337,7 +351,7 @@ public class chickentodinner_ItDepth implements IPlayer, IAuto {
             key ^=newPoss;
             key ^=newArrow;
                     
-            best = Math.min(best, AlphaBeta(aux, alpha, beta, depth-1));  
+            best = Math.min(best, AlphaBeta(aux, alpha, beta, depthActual-1));  
             beta = Math.min(beta, best); 
             
             key ^=oldPoss;
