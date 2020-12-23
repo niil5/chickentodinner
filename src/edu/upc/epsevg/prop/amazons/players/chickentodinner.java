@@ -22,7 +22,7 @@ import java.util.Random;
 public class chickentodinner implements IPlayer, IAuto {
     private String name;
     private GameStatus s;
-    private int maxDepth = 2;
+    private int maxDepth = 1;
     private long numNodosExp = 0;
     private int maxint = Integer.MAX_VALUE; //valor maximo que puede asignarse a un entero
     private int minint = Integer.MIN_VALUE; //valor minimo que puede asignarse a un entero
@@ -49,12 +49,15 @@ public class chickentodinner implements IPlayer, IAuto {
     }
     
     private boolean isInBounds(int x, int y) {
+        System.out.println("inbound");
         return (x >= 0 && x < s.getSize())
                 && (y >= 0 && y < s.getSize());
     }
     
     public Move move(GameStatus s) {
+         System.out.println("A");
         player = s.getCurrentPlayer();
+        this.s = s;
         numNodosExp = 0;
         int alpha = minint;     
         int beta = maxint; 
@@ -80,12 +83,13 @@ public class chickentodinner implements IPlayer, IAuto {
            
         }
         if(bestMove == null){
-            System.out.println("bestMove == NULL");
+            System.out.println("B");
         }
         return new Move(s.getAmazon(s.getCurrentPlayer(), bestAmazon), bestMove, shootArrow(s), (int)numNodosExp, maxDepth, SearchType.RANDOM);
     }
     
     private int heuristica(GameStatus s){
+         System.out.println("C");
         CellType enemy;
         if(player == CellType.PLAYER1) enemy = CellType.PLAYER2;
         else enemy = CellType.PLAYER1;
@@ -93,6 +97,7 @@ public class chickentodinner implements IPlayer, IAuto {
     }
     
     private int getHeuristica(GameStatus s,CellType p){
+         System.out.println("D");
         int numeroamazones=s.getNumberOfAmazonsForEachColor();
         java.awt.Point apuntada = null;
         java.awt.Point amazonActual = null;
@@ -113,6 +118,7 @@ public class chickentodinner implements IPlayer, IAuto {
     
     
  private java.awt.Point shootArrow(GameStatus s){
+      System.out.println("E");
         java.awt.Point apuntada = null;
         java.awt.Point amazonActual = null;
         int numeroamazones=s.getNumberOfAmazonsForEachColor();
@@ -124,40 +130,49 @@ public class chickentodinner implements IPlayer, IAuto {
         int minBuida=maxint;
         CellType jugadoractual=s.getCurrentPlayer();
         for (int i = 0; i<numeroamazones; i++){
+            System.out.println("E1");
             amazonActual=s.getAmazon(jugadoractual,i);
             posx=amazonActual.getX();
             posy=amazonActual.getY();
             amazonIndex=i;
-            for (double x = posx-1; x<posx+1; x++){
-                 for (double y = posy-1; y<posy+1; y++){ 
+            for (double x = posx-1; x<=posx+1; x++){
+                System.out.println("E2");
+                 for (double y = posy-1; y<=posy+1; y++){ 
+                     System.out.println("E3");
                     if(isInBounds((int)x,(int)y)){//Revisar si x o y pot ser iguala tauler
                         if(s.getPos((int)x,(int)y)==CellType.EMPTY){
+                            System.out.println("E3-1");
                            ++buida;
                        }
                     }
                 }
             } 
             //comparacion em quedo amb la més petita
-            if(buida<minBuida){
+            if(buida<minBuida && buida > 0){
                 minBuida=buida;
                 bestAmazon=amazonIndex;
             }
-            buida=0;// Revisar
+            buida=0;
         }
         amazonActual=s.getAmazon(jugadoractual,bestAmazon);
         posx=amazonActual.getX();
         posy=amazonActual.getY();
-        boolean trobada=true;
-        for (double x = posx-1; x<posx+1; x++){
-            for (double y = posy-1; y<posy+1; y++){ 
-                if((x>=0 || x<tauler) && (y>=0 || y<tauler) ){//Revisar si x o y pot ser iguala tauler
-                    if(s.getPos((int)x,(int)y)==CellType.EMPTY || trobada){
-                        trobada=false;
+        boolean trobada=false;
+        for (double x = posx-1; x<=posx+1 && !trobada; x++){
+            System.out.println("E4");
+            for (double y = posy-1; y<=posy+1 && !trobada; y++){
+                System.out.println("E5");
+                if(isInBounds((int)x,(int)y)){//Revisar si x o y pot ser iguala tauler
+                    if(s.getPos((int)x,(int)y)==CellType.EMPTY){
+                        trobada=true;
                         apuntada=new Point((int)x,(int)y);
                     }
                 }
             }
         }
+        if(apuntada == null){
+           System.out.println("apuntada null");
+        } 
         return apuntada;
     }
     
@@ -166,6 +181,7 @@ public class chickentodinner implements IPlayer, IAuto {
     
     
     private int AlphaBeta(GameStatus s, int alpha, int beta, int depth){
+         System.out.println("F");
     numNodosExp++;          
     int best;               
     if (depth <= 0 || s.isGameOver() || s.getEmptyCellsCount() == 0){ //añadir mejor condicion de salida 
