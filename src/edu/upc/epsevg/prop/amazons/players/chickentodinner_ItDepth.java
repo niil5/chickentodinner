@@ -130,7 +130,6 @@ public class chickentodinner_ItDepth implements IPlayer, IAuto {
     
     private int getHeuristica(GameStatus s,CellType p){
         int numeroamazones=s.getNumberOfAmazonsForEachColor();
-        java.awt.Point apuntada = null;
         java.awt.Point amazonActual = null;
         ArrayList llistapos = new ArrayList(); //Llista de possibles posicions
         int valor=0;
