@@ -16,7 +16,7 @@ import java.util.ArrayList;
 import java.util.Random;
 
 /**
- *
+ *  
  * @author nilbm y David
  */
 public class chickentodinner implements IPlayer, IAuto {
@@ -29,33 +29,60 @@ public class chickentodinner implements IPlayer, IAuto {
     private CellType player;
     private CellType enemy;
     
+    /**
+     * Crea un nuevo jugador con nombre = name y un limite de profundidad por defecto de 4.
+     * @param name 
+     */
     public chickentodinner(String name) {
         this.name = name;
         this.maxDepth = 4;
     }
     
+    /**
+     * Crea un nuevo jugador con nombre = name y un limite de profundidad = depth.
+     * @param name
+     * @param depth 
+     */
     public chickentodinner(String name, int depth) {
         this.name = name;
         this.maxDepth = depth;
     }
     
-    @Override
-    public void timeout() {
-        // Nothing to do! I'm so fast, I never timeout 8-)
-    }
-    
+    /**
+     * Devuelve un String correspondiente al nombre de nuestro jugador + el nombre dado al crearlo.
+     * @return String
+     */
     @Override
     public String getName() {
-        return "Random(" + name + ")";
+        return "Chickentodinner(" + name + ")";
     }
     
+    /**
+     * no se usa en esta version, necesaria al ser una clase que implementa IAuto e IPlayer.
+     */
+    @Override
+    public void timeout() {
+        
+    }
+    
+    /**
+     * Funcion para comprobar si un punto esta dentro del tablero, devuelve true si x e y estan dentro, false en caso contrario.
+     * @param x coordenada x
+     * @param y coordenada y
+     * @return true si esta dentro del tablero (guardado en varialbe global s), false en caso contrario
+     */
     private boolean isInBounds(int x, int y) {
         return (x >= 0 && x < s.getSize())
                 && (y >= 0 && y < s.getSize());
     }
     
-public Move move(GameStatus s) {
-        player = s.getCurrentPlayer();
+    /**
+     * Funcion para escoger el mejor movimiento a partir de un GameStatus pasado por parametro. Devuelve el siguiente movimiento que nuestro jugador quiere hacer. 
+     * @param s es el GameStatus del cual obtenemos datos para los calculos.
+     * @return 
+     */
+    public Move move(GameStatus s) {
+        player = s.getCurrentPlayer(); 
         if(player == CellType.PLAYER1) enemy = CellType.PLAYER2;
         else enemy = CellType.PLAYER1;
         this.s = s;
@@ -95,10 +122,21 @@ public Move move(GameStatus s) {
         return new Move(s.getAmazon(s.getCurrentPlayer(), bestAmazon), bestMove, shootArrow(aux), (int)numNodosExp, maxDepth, SearchType.RANDOM);
     }
     
+    /**
+     * Funcion para calcular la Heuristica general de un GameStatus. Devuelve un entero correspondiente a la heuristica del tablero para nuestro jugador - el enemigo.
+     * @param s es el GameStatus del cual obtenemos datos para los calculos.
+     * @return 
+     */
     private int heuristica(GameStatus s){
         return getHeuristica(s,player)-getHeuristica(s,enemy);
     }
     
+    /**
+     * Funcion para calcular la Heuristica especifica de un jugador en un tablero. Devuelve un entero correspondiente al valor heuristico de el jugador p en el gamestatus s.
+     * @param s es el GameStatus del cual obtenemos datos para los calculos.
+     * @param p
+     * @return 
+     */
     private int getHeuristica(GameStatus s,CellType p){
         int numeroamazones=s.getNumberOfAmazonsForEachColor();
         java.awt.Point apuntada = null;
@@ -145,8 +183,12 @@ public Move move(GameStatus s) {
     }
     
     
-    
- private java.awt.Point shootArrow(GameStatus s){
+    /**
+     * Devuelve la posicion en la que disparar una flecha dado un GameStatus s. Prioriza bloquear al rival.
+     * @param s es el GameStatus del cual obtenemos datos para los calculos.
+     * @return 
+     */
+    private java.awt.Point shootArrow(GameStatus s){
         java.awt.Point apuntada = null;
         java.awt.Point amazonActual = null;
         int numeroamazones=s.getNumberOfAmazonsForEachColor();
@@ -218,7 +260,14 @@ public Move move(GameStatus s) {
     
     
     
-    
+    /**
+     * Funcion min/max con poda alpha/beta y un limite de profundidad depth.
+     * @param s es el GameStatus del cual obtenemos datos para los calculos.
+     * @param alpha valor alpha de la poda.
+     * @param beta valor beta de la poda.
+     * @param depth profundidad actual, es mayor o igual a 0. 0 significa que estamos en lo mas profundo (corresponde a limite de profundidad - profundidad actual).
+     * @return valor heristic de la ultima rama de profundidad/condiciones de salida.
+     */
     private int AlphaBeta(GameStatus s, int alpha, int beta, int depth){
     numNodosExp++;          
     int best;               

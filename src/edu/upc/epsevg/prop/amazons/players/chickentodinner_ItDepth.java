@@ -35,21 +35,39 @@ public class chickentodinner_ItDepth implements IPlayer, IAuto {
     private boolean timeOut = false;
     private int depth=0;
     
+    
+    
+    /**
+     * Crea un nuevo jugador con nombre = name.
+     * @param name
+     */
     public chickentodinner_ItDepth(String name) {
         this.name = name;
     }
     
-    
+    /**
+     * Cambia la variable global timeOut a true si recibimos el evento timeout().
+     */
     @Override
     public void timeout() {
         timeOut = true;
     }
     
+    /**
+     * Devuelve un String correspondiente al nombre de nuestro jugador + el nombre dado al crearlo.
+     * @return String
+     */
     @Override
     public String getName() {
-        return "Random(" + name + ")";
+        return "Chickentodinner(" + name + ")";
     }
     
+    /**
+     * Funcion para comprobar si un punto esta dentro del tablero, devuelve true si x e y estan dentro, false en caso contrario.
+     * @param x coordenada x
+     * @param y coordenada y
+     * @return true si esta dentro del tablero (guardado en varialbe global s), false en caso contrario
+     */
     private boolean isInBounds(int x, int y) {
         return (x >= 0 && x < s.getSize())
                 && (y >= 0 && y < s.getSize());
@@ -82,6 +100,11 @@ public class chickentodinner_ItDepth implements IPlayer, IAuto {
         return hashKey;
     }
     
+    /**
+     * Funcion para escoger el mejor movimiento a partir de un GameStatus pasado por parametro.  
+     * @param s es el GameStatus del cual obtenemos datos para los calculos.
+     * @return Devuelve el siguiente movimiento que nuestro jugador quiere hacer.
+     */
     public Move move(GameStatus s) {
         this.s = s;
         if(firtsTime){
@@ -150,6 +173,12 @@ public class chickentodinner_ItDepth implements IPlayer, IAuto {
         return new Move(s.getAmazon(s.getCurrentPlayer(), bestAmazon), bestMove, shootArrow(aux), (int)numNodosExp, this.depth, SearchType.RANDOM);
     }
     
+    
+    /**
+     * Funcion para calcular la Heuristica general de un GameStatus. 
+     * @param s es el GameStatus del cual obtenemos datos para los calculos.
+     * @return Devuelve un entero correspondiente a la heuristica del tablero para nuestro jugador - el enemigo.
+     */
     private int heuristica(GameStatus s){
         int hValue;
         if(htable.get(key) == null){
@@ -161,6 +190,12 @@ public class chickentodinner_ItDepth implements IPlayer, IAuto {
         return hValue;
     }
     
+    /**
+     * Funcion para calcular la Heuristica especifica de un jugador en un tablero. 
+     * @param s es el GameStatus del cual obtenemos datos para los calculos.
+     * @param p CellType.PLAYER1 o CellType.PLAYER2 que estamos analizando.
+     * @return Devuelve un entero correspondiente al valor heuristico de el jugador p en el gamestatus s.
+     */
     private int getHeuristica(GameStatus s,CellType p){
         int numeroamazones=s.getNumberOfAmazonsForEachColor();
         java.awt.Point amazonActual = null;
@@ -206,8 +241,12 @@ public class chickentodinner_ItDepth implements IPlayer, IAuto {
     }
     
     
-    
- private java.awt.Point shootArrow(GameStatus s){
+    /**
+     * Devuelve la posicion en la que disparar una flecha dado un GameStatus s. Prioriza bloquear al rival.
+     * @param s es el GameStatus del cual obtenemos datos para los calculos.
+     * @return un Point correspondiente a la casilla mas optima para lanzar una flecha.
+     */
+    private java.awt.Point shootArrow(GameStatus s){
         java.awt.Point apuntada = null;
         java.awt.Point amazonActual = null;
         int numeroamazones=s.getNumberOfAmazonsForEachColor();
@@ -276,7 +315,14 @@ public class chickentodinner_ItDepth implements IPlayer, IAuto {
     
     
     
-    
+    /**
+     * Funcion min/max con poda alpha/beta y un limite de profundidad depth.
+     * @param s es el GameStatus del cual obtenemos datos para los calculos.
+     * @param alpha valor alpha de la poda.
+     * @param beta valor beta de la poda.
+     * @param depth profundidad actual, es mayor o igual a 0. 0 significa que estamos en lo mas profundo (corresponde a limite de profundidad - profundidad actual).
+     * @return valor heristic de la ultima rama de profundidad/condiciones de salida.
+     */
     private int AlphaBeta(GameStatus s, int alpha, int beta, int depthActual){
     if(timeOut){
         return minint;
