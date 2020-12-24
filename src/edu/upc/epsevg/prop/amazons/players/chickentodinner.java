@@ -20,14 +20,14 @@ import java.util.Random;
  * @author nilbm y David
  */
 public class chickentodinner implements IPlayer, IAuto {
-    private String name;
-    private GameStatus s;
-    private int maxDepth = 4;
-    private long numNodosExp = 0;
+    private String name;    //donde guardamos el nombre
+    private GameStatus s;   //donde guardamos el game status inicial
+    private int maxDepth = 4;   //maximo de profundidad por defecto
+    private long numNodosExp = 0;   //numero de nodosExplorados, lo incrementamos y reseteamos en cada movimiento
     private int maxint = Integer.MAX_VALUE; //valor maximo que puede asignarse a un entero
     private int minint = Integer.MIN_VALUE; //valor minimo que puede asignarse a un entero
-    private CellType player;
-    private CellType enemy;
+    private CellType player;    //donde guardamos nuestro jugador
+    private CellType enemy;     //donde guardmaos el jugador enemigo
     
     /**
      * Crea un nuevo jugador con nombre = name y un limite de profundidad por defecto de 4.
@@ -77,11 +77,14 @@ public class chickentodinner implements IPlayer, IAuto {
     }
     
     /**
-     * Funcion para escoger el mejor movimiento a partir de un GameStatus pasado por parametro. Devuelve el siguiente movimiento que nuestro jugador quiere hacer. 
+     * Funcion para escoger el mejor movimiento a partir de un GameStatus pasado por parametro.  
      * @param s es el GameStatus del cual obtenemos datos para los calculos.
-     * @return 
+     * @return Devuelve el siguiente movimiento que nuestro jugador quiere hacer.
      */
     public Move move(GameStatus s) {
+        
+        //Guardamos valores por defecto y reiniciamos parametros que usamos en cada movimiento.
+        //###########################
         player = s.getCurrentPlayer(); 
         if(player == CellType.PLAYER1) enemy = CellType.PLAYER2;
         else enemy = CellType.PLAYER1;
@@ -92,7 +95,11 @@ public class chickentodinner implements IPlayer, IAuto {
         int best = minint;
         int bestAmazon = 0;
         Point bestMove = null;
+        //###########################
         
+        //Calculamos un valor heuristico para cada movimiento posible de cada amazona, lo comparamos y nos quedamos con el mejor movimiento posible. 
+        //Tambien hacemos un "trim" de la busqueda aumentando la ventana alpha.
+        //###########################
         for (int i = 0; i<s.getNumberOfAmazonsForEachColor(); i++){
             java.awt.Point pActual = s.getAmazon(s.getCurrentPlayer(), i);
             java.util.ArrayList<java.awt.Point> actualAmazon = s.getAmazonMoves(pActual, false);
@@ -108,36 +115,40 @@ public class chickentodinner implements IPlayer, IAuto {
                 }                       
                 alpha = Math.max(alpha, best);
             }         
-
-       
         }
+        //###########################
+        
+        //Comprobason que exista mejor movimiento, si no existe ponemos flecha para que acabe el juego(perdemos en teoria)
+        //Si existe mejor movimiento, devolvemos el mejor movimiento posible, junto a la profundidad maxima y el numero de nodos explorados.
+        //###########################
         if(bestMove == null){
-          return new Move(s.getAmazon(s.getCurrentPlayer(), bestAmazon), s.getAmazon(s.getCurrentPlayer(), bestAmazon), shootArrow(s), (int)numNodosExp, maxDepth, SearchType.RANDOM);  
+          return new Move(s.getAmazon(s.getCurrentPlayer(), bestAmazon), s.getAmazon(s.getCurrentPlayer(), bestAmazon), shootArrow(s), (int)numNodosExp, maxDepth, SearchType.MINIMAX);  
         }
-        System.out.println("saca movimiento");
-        System.out.println(s.getAmazon(s.getCurrentPlayer(), bestAmazon));
-        System.out.println(bestMove);
         GameStatus aux = new GameStatus(s);
         aux.moveAmazon(s.getAmazon(s.getCurrentPlayer(), bestAmazon), bestMove);
-        return new Move(s.getAmazon(s.getCurrentPlayer(), bestAmazon), bestMove, shootArrow(aux), (int)numNodosExp, maxDepth, SearchType.RANDOM);
+        return new Move(s.getAmazon(s.getCurrentPlayer(), bestAmazon), bestMove, shootArrow(aux), (int)numNodosExp, maxDepth, SearchType.MINIMAX);
+        //###########################
     }
     
     /**
-     * Funcion para calcular la Heuristica general de un GameStatus. Devuelve un entero correspondiente a la heuristica del tablero para nuestro jugador - el enemigo.
+     * Funcion para calcular la Heuristica general de un GameStatus. 
      * @param s es el GameStatus del cual obtenemos datos para los calculos.
-     * @return 
+     * @return Devuelve un entero correspondiente a la heuristica del tablero para nuestro jugador - el enemigo.
      */
     private int heuristica(GameStatus s){
-        return getHeuristica(s,player)-getHeuristica(s,enemy);
+        return getHeuristica(s,player)-getHeuristica(s,enemy); //restamos el valor del enemigo a nuestro jugador par aun tablero espesifico y asi saber el valor general de la partida
     }
     
     /**
-     * Funcion para calcular la Heuristica especifica de un jugador en un tablero. Devuelve un entero correspondiente al valor heuristico de el jugador p en el gamestatus s.
+     * Funcion para calcular la Heuristica especifica de un jugador en un tablero. 
      * @param s es el GameStatus del cual obtenemos datos para los calculos.
-     * @param p
-     * @return 
+     * @param p CellType.PLAYER1 o CellType.PLAYER2 que estamos analizando.
+     * @return Devuelve un entero correspondiente al valor heuristico de el jugador p en el gamestatus s.
      */
     private int getHeuristica(GameStatus s,CellType p){
+        
+        //Inicializamos variables que usaremos.
+        //###########################
         int numeroamazones=s.getNumberOfAmazonsForEachColor();
         java.awt.Point apuntada = null;
         java.awt.Point amazonActual = null;
@@ -145,15 +156,18 @@ public class chickentodinner implements IPlayer, IAuto {
         int valor=0;
         int valortotal=0;
         CellType jugadoractual=p;
-        if(s.isGameOver()){
+        //###########################
+        
+        
+        if(s.isGameOver()){     //comprobamos si alguien gano, devolvemos valores maximos o minimos dependiendo.
             
             if(s.GetWinner()==jugadoractual){
                 valortotal=maxint;
             }else{
                 valortotal=minint;
             }
-        }else{
-            for (int i = 0; i<numeroamazones; i++){
+        }else{                  //si no, calculamos cuantos movimientos puede hacer cada amazona y lo sumamos.
+            for (int i = 0; i<numeroamazones; i++){ 
                 amazonActual=s.getAmazon(jugadoractual,i);
                 llistapos=s.getAmazonMoves(amazonActual,false);
                 valor=llistapos.size();
@@ -161,6 +175,8 @@ public class chickentodinner implements IPlayer, IAuto {
             } 
         }
         
+        //Calcula cuantas casillas vacias y cuantas amazonas estan bloqueadas para el calculo final de nuestra heuristica.
+        //###########################
         int buida = 0;
         int bloqueadas = 0;
         for (int i = 0; i<s.getNumberOfAmazonsForEachColor(); i++){
@@ -179,16 +195,21 @@ public class chickentodinner implements IPlayer, IAuto {
             if(buida==0) bloqueadas+=1;
            
         }
-        return valortotal * (buida/s.getNumberOfAmazonsForEachColor()) - (50*bloqueadas);
+        //###########################
+        
+        return valortotal * (buida/s.getNumberOfAmazonsForEachColor()) - (50*bloqueadas); //calculo final, numº movimientos disponibles * (cantidad de casillas vacias alrededor de las amazonas / numero de amazonas) - (valor arbitrario * numero de amazonas bloqueadas)
     }
     
     
     /**
      * Devuelve la posicion en la que disparar una flecha dado un GameStatus s. Prioriza bloquear al rival.
      * @param s es el GameStatus del cual obtenemos datos para los calculos.
-     * @return 
+     * @return un Point correspondiente a la casilla mas optima para lanzar una flecha.
      */
     private java.awt.Point shootArrow(GameStatus s){
+        
+        //Valores y variables que usaremos en cada desicion.
+        //###########################
         java.awt.Point apuntada = null;
         java.awt.Point amazonActual = null;
         int numeroamazones=s.getNumberOfAmazonsForEachColor();
@@ -198,7 +219,13 @@ public class chickentodinner implements IPlayer, IAuto {
         int buida=0;
         int bestAmazon=0;
         int minBuida=maxint;
-        CellType jugadoractual=enemy;
+        CellType jugadoractual;
+        if(s.getCurrentPlayer()==CellType.PLAYER1)  jugadoractual=CellType.PLAYER2;
+        else jugadoractual=CellType.PLAYER1;
+        //###########################
+        
+        //Vemos que amazona tiene menos movimientos disponible, la guardamos como prioridad para disparar.
+        //###########################
         for (int i = 0; i<numeroamazones; i++){
             amazonActual=s.getAmazon(jugadoractual,i);
             posx=amazonActual.getX();
@@ -220,6 +247,10 @@ public class chickentodinner implements IPlayer, IAuto {
             }
             buida=0;
         }
+        //###########################
+        
+        //Escogemos una casilla alrededor de la amazona escogida para poner la flecha i bloquearla.
+        //###########################
         amazonActual=s.getAmazon(jugadoractual,bestAmazon);
         posx=amazonActual.getX();
         posy=amazonActual.getY();
@@ -229,16 +260,16 @@ public class chickentodinner implements IPlayer, IAuto {
                 if(isInBounds((int)x,(int)y)){
                     if(s.getPos((int)x,(int)y)==CellType.EMPTY){
                         trobada=true;
-                        System.out.println("encontro apuntada para: ");
-                        System.out.println(amazonIndex);
-                        System.out.println((int)x);
-                        System.out.println((int)y);
                         apuntada=new Point((int)x,(int)y);
                         return apuntada;
                     }
                 }
             }
         }
+        //###########################
+        
+        //Si no hay ninguna disponible, escogemos una casilla aleatoria para poner la felcha
+        //###########################
         if(apuntada == null || !isInBounds((int)apuntada.getX(), (int)apuntada.getY()) || s.getPos((int)apuntada.getX(), (int)apuntada.getY())==CellType.EMPTY){
            int n = s.getEmptyCellsCount();
             Random rand = new Random();
@@ -254,6 +285,8 @@ public class chickentodinner implements IPlayer, IAuto {
                 }
             }
         } 
+        //###########################
+        
         return apuntada;
     }
     
@@ -269,16 +302,19 @@ public class chickentodinner implements IPlayer, IAuto {
      * @return valor heristic de la ultima rama de profundidad/condiciones de salida.
      */
     private int AlphaBeta(GameStatus s, int alpha, int beta, int depth){
-    numNodosExp++;          
+    numNodosExp++;         //aumentamos el numero de nodos recorridos. 
     int best;               
-    if (depth <= 0 || s.isGameOver() || s.getEmptyCellsCount() == 0){ //añadir mejor condicion de salida 
-        if(s.isGameOver()){
-            if(player == s.GetWinner()) return maxint;
-            else return minint;
-        }
+    
+    //Condicion de salida, devolvemos la heuristica del tablero.
+    //###########################
+    if (depth <= 0 || s.isGameOver() || s.getEmptyCellsCount() == 0){ 
         return heuristica(s);                               
     }
+    //###########################
     
+    
+    //Escogemos la amazona con menos movimientos posibles, hemos desidido que para ganar hay que priorizar que no nos bloqueen a nuestras amazonas por lo que unicamente hacemos el subarbol de movimientos de esta.
+    //###########################
     java.util.ArrayList<java.awt.Point> priorityAmazon = null; //miramos cual es la que menos movimientos posibles tiene, para priorizarla y que no la bloqueen.
     int amazonIndex = 0;
     for (int i = 0; i<s.getNumberOfAmazonsForEachColor(); i++){
@@ -292,7 +328,12 @@ public class chickentodinner implements IPlayer, IAuto {
             amazonIndex = i;
         }
     }
+    //###########################
     
+    
+    
+    //Min-Max con poda alpha-beta
+    //###########################
     if (player == s.getCurrentPlayer()){  
         best = minint;  
         for (int i = 0; i<priorityAmazon.size(); i++){  
@@ -317,6 +358,7 @@ public class chickentodinner implements IPlayer, IAuto {
         }
         return best;                            
     } 
+    //###########################
   } 
 }
 

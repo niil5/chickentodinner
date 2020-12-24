@@ -72,9 +72,12 @@ public class chickentodinner_ItDepth implements IPlayer, IAuto {
         return (x >= 0 && x < s.getSize())
                 && (y >= 0 && y < s.getSize());
     }
-    
+    /**
+     * Generamos una tabla de s.getSize()*s.getSize()*3 para guardar longs aleatorios que utilizaremos en nuestra implementacion de Zobrist
+     */
     private void initZobrist(){
         Random rd = new Random();
+        //Por cada casilla de tablero, guardamos en nuestra tabla tres long aleatorios correspondientes a cada posible "pieza".
         for (int i=0; i<s.getSize(); i++){
             for (int j=0; j<s.getSize(); j++){
                 for (int z=0; z<3; z++){
@@ -83,12 +86,16 @@ public class chickentodinner_ItDepth implements IPlayer, IAuto {
             }
         }
     }
-    
+    /**
+     * Generamos una Key a partir de un tablero y la tabla de valores aleatorios de initZobrist().
+     * @param s GameStatus del cual generar la hashKey
+     * @return un long correspondiente a la hashKey del tablero GameStatus s.
+     */
     public long getHashKey(GameStatus s){
         long hashKey = 0;
-        for (int i=0; i<s.getSize(); i++){
+        for (int i=0; i<s.getSize(); i++){ //miramos cada posicion del tablero
             for (int j=0; j<s.getSize(); j++){
-                if(s.getPos(i, j) == CellType.PLAYER1){
+                if(s.getPos(i, j) == CellType.PLAYER1){ //hacemos una operacion XOR sobre la key dependiendo de que este en esa posicion (si hay algo).
                     hashKey ^= table[i][j][0];
                 } else if(s.getPos(i, j) == CellType.PLAYER2){
                     hashKey ^= table[i][j][1];
@@ -125,11 +132,11 @@ public class chickentodinner_ItDepth implements IPlayer, IAuto {
         int bestAmazon = 0;
         Point bestMove = null;
         
-        while(!timeOut){
-            this.depth+=1;
-            for (int i = 0; i<s.getNumberOfAmazonsForEachColor(); i++){
+        while(!timeOut){ //mientras no estemos en timeOut, mira nivel a nivel del arbol.
+            this.depth+=1; //aumentamos el nivel en cada iterasion (valor inicial 0, asi que la primera iteracion sera depth = 1)
+            for (int i = 0; i<s.getNumberOfAmazonsForEachColor(); i++){ //miramos para cada una de nuestras amazonas
                 java.awt.Point pActual = s.getAmazon(s.getCurrentPlayer(), i);
-                java.util.ArrayList<java.awt.Point> actualAmazon = s.getAmazonMoves(pActual, false);
+                java.util.ArrayList<java.awt.Point> actualAmazon = s.getAmazonMoves(pActual, false); //cada uno de sus movimientos
                 for (int j = 0; j<actualAmazon.size(); j++){
                     
                     GameStatus aux = new GameStatus(s);
@@ -137,6 +144,8 @@ public class chickentodinner_ItDepth implements IPlayer, IAuto {
                     java.awt.Point apuntada = shootArrow(aux);
                     aux.placeArrow(apuntada);
 
+                    //Calculamos la key aplicando el movimiento realizado antes de llamar a la recursividad y despues deshacemos el movimiento en la key para volver al tablero inicial.
+                    //###########################
                     int color;
                     if(s.getCurrentPlayer() == CellType.PLAYER1) color = 0;
                     else color = 1;
@@ -153,7 +162,7 @@ public class chickentodinner_ItDepth implements IPlayer, IAuto {
                     key ^=oldPoss;
                     key ^=newPoss;
                     key ^=newArrow;
-                    
+                    //###########################
                     
                     if (ab>best){                  
                         bestMove=actualAmazon.get(j);  
@@ -166,11 +175,11 @@ public class chickentodinner_ItDepth implements IPlayer, IAuto {
     
         }
         if(bestMove == null){
-            return new Move(s.getAmazon(s.getCurrentPlayer(), bestAmazon), s.getAmazon(s.getCurrentPlayer(), bestAmazon), shootArrow(s), (int)numNodosExp, this.depth, SearchType.RANDOM);  
+            return new Move(s.getAmazon(s.getCurrentPlayer(), bestAmazon), s.getAmazon(s.getCurrentPlayer(), bestAmazon), shootArrow(s), (int)numNodosExp, this.depth, SearchType.MINIMAX);  
         }
         GameStatus aux = new GameStatus(s);
         aux.moveAmazon(s.getAmazon(s.getCurrentPlayer(), bestAmazon), bestMove);
-        return new Move(s.getAmazon(s.getCurrentPlayer(), bestAmazon), bestMove, shootArrow(aux), (int)numNodosExp, this.depth, SearchType.RANDOM);
+        return new Move(s.getAmazon(s.getCurrentPlayer(), bestAmazon), bestMove, shootArrow(aux), (int)numNodosExp, this.depth, SearchType.MINIMAX);
     }
     
     
@@ -197,28 +206,37 @@ public class chickentodinner_ItDepth implements IPlayer, IAuto {
      * @return Devuelve un entero correspondiente al valor heuristico de el jugador p en el gamestatus s.
      */
     private int getHeuristica(GameStatus s,CellType p){
+        
+        //Inicializamos variables que usaremos.
+        //###########################
         int numeroamazones=s.getNumberOfAmazonsForEachColor();
+        java.awt.Point apuntada = null;
         java.awt.Point amazonActual = null;
         ArrayList llistapos = new ArrayList(); //Llista de possibles posicions
         int valor=0;
         int valortotal=0;
         CellType jugadoractual=p;
-        if(s.isGameOver()){
+        //###########################
+        
+        
+        if(s.isGameOver()){     //comprobamos si alguien gano, devolvemos valores maximos o minimos dependiendo.
             
             if(s.GetWinner()==jugadoractual){
-                return maxint;
+                valortotal=maxint;
             }else{
-                return minint;
+                valortotal=minint;
             }
-        }else{
-            for (int i = 0; i<numeroamazones; i++){
+        }else{                  //si no, calculamos cuantos movimientos puede hacer cada amazona y lo sumamos.
+            for (int i = 0; i<numeroamazones; i++){ 
                 amazonActual=s.getAmazon(jugadoractual,i);
                 llistapos=s.getAmazonMoves(amazonActual,false);
                 valor=llistapos.size();
                 valortotal+=valor;      
             } 
         }
-
+        
+        //Calcula cuantas casillas vacias y cuantas amazonas estan bloqueadas para el calculo final de nuestra heuristica.
+        //###########################
         int buida = 0;
         int bloqueadas = 0;
         for (int i = 0; i<s.getNumberOfAmazonsForEachColor(); i++){
@@ -237,7 +255,9 @@ public class chickentodinner_ItDepth implements IPlayer, IAuto {
             if(buida==0) bloqueadas+=1;
            
         }
-        return valortotal * (buida/s.getNumberOfAmazonsForEachColor()) - (50*bloqueadas);
+        //###########################
+        
+        return valortotal * (buida/s.getNumberOfAmazonsForEachColor()) - (50*bloqueadas); //calculo final, numº movimientos disponibles * (cantidad de casillas vacias alrededor de las amazonas / numero de amazonas) - (valor arbitrario * numero de amazonas bloqueadas)
     }
     
     
@@ -247,6 +267,9 @@ public class chickentodinner_ItDepth implements IPlayer, IAuto {
      * @return un Point correspondiente a la casilla mas optima para lanzar una flecha.
      */
     private java.awt.Point shootArrow(GameStatus s){
+        
+        //Valores y variables que usaremos en cada desicion.
+        //###########################
         java.awt.Point apuntada = null;
         java.awt.Point amazonActual = null;
         int numeroamazones=s.getNumberOfAmazonsForEachColor();
@@ -256,7 +279,13 @@ public class chickentodinner_ItDepth implements IPlayer, IAuto {
         int buida=0;
         int bestAmazon=0;
         int minBuida=maxint;
-        CellType jugadoractual=enemy;
+        CellType jugadoractual;
+        if(s.getCurrentPlayer()==CellType.PLAYER1)  jugadoractual=CellType.PLAYER2;
+        else jugadoractual=CellType.PLAYER1;
+        //###########################
+        
+        //Vemos que amazona tiene menos movimientos disponible, la guardamos como prioridad para disparar.
+        //###########################
         for (int i = 0; i<numeroamazones; i++){
             amazonActual=s.getAmazon(jugadoractual,i);
             posx=amazonActual.getX();
@@ -278,6 +307,10 @@ public class chickentodinner_ItDepth implements IPlayer, IAuto {
             }
             buida=0;
         }
+        //###########################
+        
+        //Escogemos una casilla alrededor de la amazona escogida para poner la flecha i bloquearla.
+        //###########################
         amazonActual=s.getAmazon(jugadoractual,bestAmazon);
         posx=amazonActual.getX();
         posy=amazonActual.getY();
@@ -287,13 +320,16 @@ public class chickentodinner_ItDepth implements IPlayer, IAuto {
                 if(isInBounds((int)x,(int)y)){
                     if(s.getPos((int)x,(int)y)==CellType.EMPTY){
                         trobada=true;
-
                         apuntada=new Point((int)x,(int)y);
                         return apuntada;
                     }
                 }
             }
         }
+        //###########################
+        
+        //Si no hay ninguna disponible, escogemos una casilla aleatoria para poner la felcha
+        //###########################
         if(apuntada == null || !isInBounds((int)apuntada.getX(), (int)apuntada.getY()) || s.getPos((int)apuntada.getX(), (int)apuntada.getY())==CellType.EMPTY){
            int n = s.getEmptyCellsCount();
             Random rand = new Random();
@@ -309,6 +345,8 @@ public class chickentodinner_ItDepth implements IPlayer, IAuto {
                 }
             }
         } 
+        //###########################
+        
         return apuntada;
     }
     
@@ -324,15 +362,21 @@ public class chickentodinner_ItDepth implements IPlayer, IAuto {
      * @return valor heristic de la ultima rama de profundidad/condiciones de salida.
      */
     private int AlphaBeta(GameStatus s, int alpha, int beta, int depthActual){
-    if(timeOut){
+    if(timeOut){ //si estamos en timeOut, devolvemos el peor resultado posible para que no lo tenga en cuenta la mayor parte de veces.
         return minint;
     }
     numNodosExp++;          
-    int best;               
-    if (depthActual <= 0 || s.isGameOver() || s.getEmptyCellsCount() == 0){ //añadir mejor condicion de salida 
+    int best;    
+    
+    //Condicion de salida, devolvemos la heuristica del tablero.
+    //###########################
+    if (depthActual <= 0 || s.isGameOver() || s.getEmptyCellsCount() == 0){ 
         return heuristica(s);                               
     }
+    //###########################
     
+    //Escogemos la amazona con menos movimientos posibles, hemos desidido que para ganar hay que priorizar que no nos bloqueen a nuestras amazonas por lo que unicamente hacemos el subarbol de movimientos de esta.
+    //###########################
     java.util.ArrayList<java.awt.Point> priorityAmazon = null; //miramos cual es la que menos movimientos posibles tiene, para priorizarla y que no la bloqueen.
     int amazonIndex = 0;
     for (int i = 0; i<s.getNumberOfAmazonsForEachColor(); i++){
@@ -346,6 +390,8 @@ public class chickentodinner_ItDepth implements IPlayer, IAuto {
             amazonIndex = i;
         }
     }
+    //###########################
+    
     
     if (player == s.getCurrentPlayer()){  
         best = minint;  
@@ -356,6 +402,9 @@ public class chickentodinner_ItDepth implements IPlayer, IAuto {
             java.awt.Point apuntada = shootArrow(aux);
             aux.placeArrow(apuntada);
 
+            
+            //Calculamos la key aplicando el movimiento realizado antes de llamar a la recursividad y despues deshacemos el movimiento en la key para volver al tablero inicial.
+            //###########################
             int color;
             if(s.getCurrentPlayer() == CellType.PLAYER1) color = 0;
             else color = 1;
@@ -373,7 +422,8 @@ public class chickentodinner_ItDepth implements IPlayer, IAuto {
             key ^=oldPoss;
             key ^=newPoss;
             key ^=newArrow;
- 
+            //###########################
+            
             if (alpha >= beta) break;       
         }
         return best;                            
